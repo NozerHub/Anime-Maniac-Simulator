@@ -180,7 +180,7 @@ local Dropdown = Tabs.Main:AddDropdown("Dropdown", {
     Title = "Select Mobs",
     Values = {"Inosuke", "Tanjuro", "Zenitzuo", "Rengokui", "Krallin", "Siccolo", "Prieza", "Cellular", "Fuu", "Lufus", "Sanju", "Soro", "Ace Of Spades", "Sakuri", "Gaaru", "Fox Boy", "Tobu", "Tengon", "Shiruhase", "Marada"},
     Multi = false,
-    Default = 0,
+    Default = 1,
 })
 
 local selectedNPC = "Inosuke"
@@ -196,6 +196,7 @@ local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Auto Mobs", Default = f
 local Button = Tabs.Main:AddButton({
     Title = "Refresh Mob List",
     Callback = function()
+        -- Atualiza o Dropdown com a lista original de NPCs
         Dropdown:SetValues({"Inosuke", "Tanjuro", "Zenitzuo", "Rengokui", "Krallin", "Siccolo", "Prieza", "Cellular", "Fuu", "Lufus", "Sanju", "Soro", "Ace Of Spades", "Sakuri", "Gaaru", "Fox Boy", "Tobu", "Tengon", "Shiruhase", "Marada"})
     end
 })
@@ -213,7 +214,7 @@ local function TeleportToNextNPC()
         for _, npc in pairs(workspace:GetDescendants()) do
             if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") and npc:FindFirstChildOfClass("Humanoid") then
                 local humanoid = npc:FindFirstChildOfClass("Humanoid")
-                if table.find(selectedNPCs, npc.Name) and humanoid and humanoid.Health > 0 and not npc.Parent:FindFirstChild("FollowRewards") then
+                if npc.Name == selectedNPC and humanoid and humanoid.Health > 0 and not npc.Parent:FindFirstChild("FollowRewards") then
                     npcAtual = npc
                     break
                 end
