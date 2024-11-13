@@ -1,0 +1,508 @@
+local placeId = game.PlaceId
+local allowedPlaceId = 83887281608963
+
+if placeId ~= allowedPlaceId then
+    return
+end
+
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Nozer Hub ║ Anime Maniac Simulator",
+    SubTitle = "                Beta Version!",
+    TabWidth = 135,
+    Size = UDim2.fromOffset(500, 350),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Credits = Window:AddTab({ Title = "║ Info", Icon = "scroll" }),
+    Settings = Window:AddTab({ Title = "║ UI Settings", Icon = "settings" }),
+    Main = Window:AddTab({ Title = "║ Main", Icon = "home" }), 
+    Hatch = Window:AddTab({ Title = "║ Auto Hatch", Icon = "egg" }), 
+    Misc = Window:AddTab({ Title = "║ Misc", Icon = "list" }),
+    LocalPlayer = Window:AddTab({ Title = "║ Local Player", Icon = "user" }),
+}
+
+local Options = Fluent.Options
+
+Fluent:Notify({
+    Title = "By Nozer Hub",
+    Content = "Thanks for using the script",
+    Duration = 5
+})
+
+local SupportSection = Tabs.Credits:AddSection("Support")
+Tabs.Credits:AddParagraph({
+    Title = "Supported Devices",
+    Content = "- Mobile\n- PC\n- Emulator\n- Console"
+})
+
+local UpdatesSection = Tabs.Credits:AddSection("Updates")
+Tabs.Credits:AddParagraph({
+    Title = "Updates",
+    Content = "- 13/11/2024"
+})
+
+local SupportSection = Tabs.Credits:AddSection("Support Executors")
+Tabs.Credits:AddParagraph({
+    Title = "Executors",
+    Content = "- Delta\n- Fluxus\n- Arceus X\n- Wave\n- Codex"
+})
+
+local CreditsSection = Tabs.Credits:AddSection("Credits")
+local linkParaCopiar = "https://www.youtube.com/@NozerHub"
+Tabs.Credits:AddButton({
+    Title = "Copy Link Channel",
+    Callback = function()
+        setclipboard(linkParaCopiar)
+    end
+})
+
+local AntiAFKEnabled = true
+local Toggle = Tabs.Misc:AddToggle("MyToggle", { Title = "Anti AFK", Default = true })
+Toggle:OnChanged(function()
+    AntiAFKEnabled = Options.MyToggle.Value
+end)
+Options.MyToggle:SetValue(true)
+
+Tabs.Misc:AddButton({
+    Title = "Server Hop",
+    Callback = function()
+        local TeleportService = game:GetService("TeleportService")
+        local HttpService = game:GetService("HttpService")
+        local placeId = game.PlaceId
+
+        local function serverHop()
+            local servers
+            local cursor = ""
+
+            local success, response = pcall(function()
+                local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor
+                return HttpService:JSONDecode(game:HttpGet(url))
+            end)
+
+            if success and response and response.data then
+                servers = response.data
+            else
+                return
+            end
+
+            for _, server in ipairs(servers) do
+                if server.id ~= game.JobId and server.playing < server.maxPlayers then
+                    TeleportService:TeleportToPlaceInstance(placeId, server.id)
+                    return
+                end
+            end
+
+            if response.nextPageCursor then
+                cursor = response.nextPageCursor
+                serverHop()
+            else
+            end
+        end
+
+        serverHop()
+    end
+})
+
+Tabs.Misc:AddButton({
+    Title = "Rejoin",
+    Callback = function()
+        local TeleportService = game:GetService("TeleportService")
+        local player = game.Players.LocalPlayer
+        TeleportService:Teleport(game.PlaceId, player)
+    end
+})
+
+local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Auto Click Aura", Default = false })
+
+Toggle:OnChanged(function()
+    while Toggle.Value do
+        local args = {
+            [1] = false
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("TrainingRemotes"):WaitForChild("Functions"):WaitForChild("TrainInvoke"):InvokeServer(unpack(args))
+        wait(0.1)
+    end
+end)
+
+Options.MyToggle:SetValue(false)
+
+local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Auto Ascend", Default = false})
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        while Toggle.Value do
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("AttemptRebirth"):InvokeServer()
+            wait(0.1)
+        end
+    end
+end)
+
+Options.MyToggle:SetValue(false)
+
+local Toggle = Tabs.Main:AddToggle("GiftToggle", {Title = "Claim Gifts", Default = false })
+
+Toggle:OnChanged(function()
+    while Options.GiftToggle.Value do
+        for i = 1, 10 do
+            local args = {
+                [1] = "Gift" .. i
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Functions"):WaitForChild("ReqClaimGift"):InvokeServer(unpack(args))
+            wait(0.5)
+        end
+        wait(2)
+    end
+end)
+
+Options.GiftToggle:SetValue(false)
+
+local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Equip Best Pets", Default = false })
+
+Toggle:OnChanged(function()
+    if Options.MyToggle.Value then
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("PetRemotes"):WaitForChild("EquipBestPets"):InvokeServer()
+    end
+end)
+
+Options.MyToggle:SetValue(false)
+
+local MainSection = Tabs.Main:AddSection("Auto Farm Mobs")
+
+local Dropdown = Tabs.Main:AddDropdown("Dropdown", {
+    Title = "Select Mobs",
+    Values = {"Inosuke", "Tanjuro", "Zenitzuo", "Rengokui", "Krallin", "Siccolo", "Prieza", "Cellular", "Fuu", "Lufus", "Sanju", "Soro", "Ace Of Spades", "Sakuri", "Gaaru", "Fox Boy", "Tobu", "Tengon", "Shiruhase", "Marada"},
+    Multi = false,
+    Default = 0,
+})
+
+local selectedNPC = "Inosuke"
+
+Dropdown:SetValue("Inosuke")
+
+Dropdown:OnChanged(function(Value)
+    selectedNPC = Value
+end)
+
+local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Auto Mobs", Default = false})
+
+local Button = Tabs.Main:AddButton({
+    Title = "Refresh Mob List",
+    Callback = function()
+        Dropdown:SetValues({"Inosuke", "Tanjuro", "Zenitzuo", "Rengokui", "Krallin", "Siccolo", "Prieza", "Cellular", "Fuu", "Lufus", "Sanju", "Soro", "Ace Of Spades", "Sakuri", "Gaaru", "Fox Boy", "Tobu", "Tengon", "Shiruhase", "Marada"})
+    end
+})
+
+local function NPCMortoOuDesaparecido(npc)
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    return not npc.Parent or (humanoid and humanoid.Health <= 0)
+end
+
+local function TeleportToNextNPC()
+    local player = game.Players.LocalPlayer
+    while Toggle.Value do
+        local npcAtual = nil
+
+        for _, npc in pairs(workspace:GetDescendants()) do
+            if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") and npc:FindFirstChildOfClass("Humanoid") then
+                local humanoid = npc:FindFirstChildOfClass("Humanoid")
+                if table.find(selectedNPCs, npc.Name) and humanoid and humanoid.Health > 0 and not npc.Parent:FindFirstChild("FollowRewards") then
+                    npcAtual = npc
+                    break
+                end
+            end
+        end
+
+        if npcAtual then
+            local npcPosition = npcAtual.HumanoidRootPart.Position
+            local direction = (npcPosition - player.Character.PrimaryPart.Position).unit
+
+            player.Character:SetPrimaryPartCFrame(CFrame.new(npcPosition + direction * 3))
+            player.Character:SetPrimaryPartCFrame(CFrame.new(player.Character.PrimaryPart.Position, npcPosition))
+
+            repeat
+                wait(0.1)
+            until NPCMortoOuDesaparecido(npcAtual)
+
+            wait(0.1)
+        else
+            wait(0.1)
+        end
+    end
+end
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        TeleportToNextNPC()
+    end
+end)
+
+local AllMobsSection = Tabs.Main:AddSection("All Mobs")
+
+local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
+    Title = "Select Mobs",
+    Values = {"Inosuke", "Tanjuro", "Zenitzuo", "Rengokui", "Krallin", "Siccolo", "Prieza", "Cellular", "Fuu", "Lufus", "Sanju", "Soro", "Ace Of Spades", "Sakuri", "Gaaru", "Fox Boy", "Tobu", "Tengon", "Shiruhase", "Marada"},
+    Multi = true,
+    Default = {}, 
+})
+
+MultiDropdown:SetValue({})  
+
+local selectedNPCs = {}
+
+MultiDropdown:OnChanged(function(Value)
+    selectedNPCs = {}
+    for npc, isSelected in pairs(Value) do
+        if isSelected then
+            table.insert(selectedNPCs, npc)
+        end
+    end
+end)
+
+local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Auto Mobs", Default = false})
+
+local Button = Tabs.Main:AddButton({
+    Title = "Refresh Mob List",
+    Callback = function()
+        MultiDropdown:SetValues({"Inosuke", "Tanjuro", "Zenitzuo", "Rengokui", "Krallin", "Siccolo", "Prieza", "Cellular", "Fuu", "Lufus", "Sanju", "Soro", "Ace Of Spades", "Sakuri", "Gaaru", "Fox Boy", "Tobu", "Tengon", "Shiruhase", "Marada"})
+    end
+})
+
+local function NPCMortoOuDesaparecido(npc)
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    return not npc.Parent or (humanoid and humanoid.Health <= 0)
+end
+
+local function TeleportToNextNPC()
+    local player = game.Players.LocalPlayer
+    while Toggle.Value do
+        local npcAtual = nil
+
+        for _, npc in pairs(workspace:GetDescendants()) do
+            if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") and npc:FindFirstChildOfClass("Humanoid") then
+                local humanoid = npc:FindFirstChildOfClass("Humanoid")
+                if table.find(selectedNPCs, npc.Name) and humanoid and humanoid.Health > 0 and not npc.Parent:FindFirstChild("FollowRewards") then
+                    npcAtual = npc
+                    break
+                end
+            end
+        end
+
+        if npcAtual then
+            local npcPosition = npcAtual.HumanoidRootPart.Position
+            local direction = (npcPosition - player.Character.PrimaryPart.Position).unit
+
+            player.Character:SetPrimaryPartCFrame(CFrame.new(npcPosition + direction * 3))
+            player.Character:SetPrimaryPartCFrame(CFrame.new(player.Character.PrimaryPart.Position, npcPosition))
+
+            repeat
+                wait(0.1)
+            until NPCMortoOuDesaparecido(npcAtual)
+
+            wait(0.1)
+        else
+            wait(0.1)
+        end
+    end
+end
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        TeleportToNextNPC()
+    end
+end)
+
+local Toggle = Tabs.Hatch:AddToggle("MultiEggToggle", {Title = "Basic Star", Default = false })
+
+Toggle:OnChanged(function()
+    while Options.MultiEggToggle.Value do
+        local args = {
+            [1] = "World1Egg",
+            [2] = "Multi",
+            [3] = {}
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("EggRemotes"):WaitForChild("Hatch"):InvokeServer(unpack(args))
+        wait(0.5)
+    end
+end)
+
+Options.MultiEggToggle:SetValue(false)
+
+local Toggle = Tabs.Hatch:AddToggle("World2EggToggle", {Title = "Namik Star", Default = false })
+
+Toggle:OnChanged(function()
+    while Options.World2EggToggle.Value do
+        local args = {
+            [1] = "World2Egg",
+            [2] = "Multi",
+            [3] = {}
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("EggRemotes"):WaitForChild("Hatch"):InvokeServer(unpack(args))
+        wait(0.5) -- Intervalo curto entre cada execução
+    end
+end)
+
+Options.World2EggToggle:SetValue(false)
+
+local OthersSection = Tabs.Main:AddSection("Others")
+
+local SpinDemonMarkToggle = Tabs.Main:AddToggle("SpinDemonMarkToggle", {Title = "Auto Spin Demon Mark", Default = false })
+
+SpinDemonMarkToggle:OnChanged(function()
+    while Options.SpinDemonMarkToggle.Value do
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Functions"):WaitForChild("SpinForDemonMark"):InvokeServer()
+        wait(0.5) -- Intervalo curto entre cada execução
+    end
+end)
+
+Options.SpinDemonMarkToggle:SetValue(false)
+
+-- Configurações de Interface e Salvar Configurações
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Fluent",
+    Content = "The script has been loaded.",
+    Duration = 8
+})
+
+SaveManager:LoadAutoloadConfig()
+
+local Toggle = Tabs.Hatch:AddToggle("MyToggle", {Title = "Mythical Pity", Default = false })
+
+Toggle:OnChanged(function()
+    while Toggle.Value do
+        local args = {
+            [1] = "World3Egg",
+            [2] = "Single",
+            [3] = {}
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("EggRemotes"):WaitForChild("Hatch"):InvokeServer(unpack(args))
+        wait(0.1) -- Intervalo entre as execuções
+    end
+end)
+
+Options.MyToggle:SetValue(false)
+
+local SpinKiAuraToggle = Tabs.Main:AddToggle("SpinKiAuraToggle", {Title = "Auto Spin For Ki Aura", Default = false })
+
+SpinKiAuraToggle:OnChanged(function()
+    while Options.SpinKiAuraToggle.Value do
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Functions"):WaitForChild("SpinForKiAura"):InvokeServer()
+        wait(0.5) -- Intervalo curto entre cada execução
+    end
+end)
+
+Options.SpinKiAuraToggle:SetValue(false)
+
+-- Input para definir a velocidade, agora na aba LocalPlayer
+local Input = Tabs.LocalPlayer:AddInput("SpeedInput", {
+    Title = "Set Speed",
+    Default = "30", -- Valor inicial
+    Placeholder = "Enter Speed",
+    Numeric = true, -- Permite apenas números
+    Finished = true, -- Só chama o callback quando pressionar enter
+    Callback = function(Value)
+        print("Speed set to:", Value)
+    end
+})
+
+Input:OnChanged(function()
+    print("Input updated:", Input.Value)
+end)
+
+-- Toggle para ativar/desativar o aumento de velocidade, agora na aba LocalPlayer
+local Toggle = Tabs.LocalPlayer:AddToggle("SpeedToggle", {Title = "Enable Speed", Default = false })
+
+Toggle:OnChanged(function()
+    local player = game:GetService("Players").LocalPlayer
+    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+    
+    if humanoid then
+        if Options.SpeedToggle.Value then
+            while Options.SpeedToggle.Value do
+                local inputSpeed = tonumber(Input.Value) -- Pega o valor do input
+                
+                -- Verifica se o valor está dentro do intervalo válido
+                if inputSpeed and inputSpeed >= 16 and inputSpeed <= 100 then
+                    humanoid.WalkSpeed = inputSpeed
+                else
+                    print("Invalid speed value. Please enter a number between 16 and 100.")
+                end
+                
+                wait(0.5) -- Intervalo entre as verificações, para não sobrecarregar
+            end
+        else
+            humanoid.WalkSpeed = 16 -- Restaura a velocidade para o valor normal (16)
+        end
+    end
+end)
+
+Options.SpeedToggle:SetValue(false)
+
+-- Função para formatar números grandes com abreviações
+local function formatNumber(number)
+    if number >= 1e15 then
+        return string.format("%.1fQ", number / 1e15)  -- Quadrilhão
+    elseif number >= 1e12 then
+        return string.format("%.1fT", number / 1e12)  -- Trilhão
+    elseif number >= 1e9 then
+        return string.format("%.1fB", number / 1e9)  -- Bilhão
+    elseif number >= 1e6 then
+        return string.format("%.1fM", number / 1e6)  -- Milhão
+    elseif number >= 1e3 then
+        return string.format("%.1fK", number / 1e3)  -- Mil
+    else
+        return tostring(number)  -- Se for menor que mil, retorna o número normal
+    end
+end
+
+local function getPlayerLeaderboardData(player)
+    local leaderboardText = ""  -- Variável para armazenar o texto do leaderboard do jogador
+
+    -- Acessa o leaderstats do jogador
+    local leaderstats = player:FindFirstChild("leaderstats")
+    
+    if leaderstats then
+        leaderboardText = leaderboardText .. "Player: " .. player.Name .. "\n"
+        
+        -- Percorre todos os itens dentro de leaderstats e adiciona ao texto
+        for _, stat in pairs(leaderstats:GetChildren()) do
+            leaderboardText = leaderboardText .. stat.Name .. ": " .. formatNumber(stat.Value) .. "\n"
+        end
+    else
+        leaderboardText = "Leaderstats não encontrado para o jogador " .. player.Name
+    end
+
+    return leaderboardText
+end
+
+-- Supondo que você já tenha uma aba configurada, vamos adicionar o leaderboard nela.
+Tabs.LocalPlayer:AddParagraph({
+    Title = "Status",  -- Título que vai ser exibido na GUI
+    Content = getPlayerLeaderboardData(game:GetService("Players").LocalPlayer)  -- Passa as informações do seu leaderboard
+})
+
+-- Caso queira atualizar as informações periodicamente, use um loop
+while true do
+    wait(5)  -- Atualiza a cada 5 segundos
+    Tabs.LocalPlayer:GetElement("Minha Força e Estatísticas").Content = getPlayerLeaderboardData(game:GetService("Players").LocalPlayer)  -- Atualiza o conteúdo do Parágrafo com as novas estatísticas
+end
