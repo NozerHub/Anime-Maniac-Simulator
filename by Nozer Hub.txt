@@ -1,0 +1,492 @@
+local placeId = game.PlaceId
+local allowedPlaceId = 18153052081
+
+if placeId ~= allowedPlaceId then
+    return
+end
+
+Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Demon Sword Reincarnation   ",
+    SubTitle = "        Made by NozerHub Latest Version!",
+    TabWidth = 120,
+    Size = UDim2.fromOffset(450, 300),
+    Acrylic = true,
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Credits = Window:AddTab({ Title = "| Info", Icon = "scroll" }),
+    Settings = Window:AddTab({ Title = "| Settings", Icon = "settings" }),
+    AutoFarm = Window:AddTab({ Title = "| Farm", Icon = "swords" }),
+    Event = Window:AddTab({ Title = "| Event", Icon = "star" }),
+    Boss = Window:AddTab({ Title = "| Boss", Icon = "skull" }),
+    Misc = Window:AddTab({ Title = "| Misc", Icon = "list" }),
+}
+
+local Options = Fluent.Options
+
+Fluent:Notify({
+    Title = "By Nozer Hub",
+    Content = "Thanks for using the script!",
+    Duration = 5
+})
+
+local SupportSection = Tabs.Credits:AddSection("Support")
+Tabs.Credits:AddParagraph({
+    Title = "Supported Devices",
+    Content = "- Mobile\n- PC\n- Emulator"
+})
+
+ local executors = {
+    {name = "Delta", statusCheck = function() return pcall(function() return getgenv().DeltaExecutor end) end},
+    {name = "Fluxus", statusCheck = function() return pcall(function() return _G.Fluxus or game:GetService("CoreGui"):FindFirstChild("Fluxus") end) end},
+    {name = "Arceus X", statusCheck = function() return pcall(function() return getmetatable(game).ArceusX end) end},
+    {name = "Wave", statusCheck = function() return pcall(function() return _G.WaveExecutor end) end},
+    {name = "Codex", statusCheck = function() return pcall(function() return game:GetService("CoreGui"):FindFirstChild("Codex") end) end},
+}
+
+local executorList = ""
+for _, executor in ipairs(executors) do
+    local status = executor.statusCheck() and "🟢" or "🔴"
+    executorList = executorList .. "\n- " .. executor.name .. " " .. status
+end
+
+Tabs.Credits:AddSection("Support Executors")
+Tabs.Credits:AddParagraph({
+    Title = "Executors",
+    Content = executorList
+})
+
+local CreditsSection = Tabs.Credits:AddSection("Credits")
+local linkParaCopiar = "https://www.youtube.com/@NozerHub"
+Tabs.Credits:AddButton({
+    Title = "Copy Link Channel",
+    Callback = function()
+        setclipboard(linkParaCopiar)
+    end
+})
+
+local AntiAFKEnabled = true
+local Toggle = Tabs.Misc:AddToggle("MyToggle", { Title = "Anti AFK", Default = true })
+
+Toggle:OnChanged(function()
+    AntiAFKEnabled = Options.MyToggle.Value
+end)
+
+Options.MyToggle:SetValue(true)
+
+local VirtualUser = game:GetService("VirtualUser")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+LocalPlayer.Idled:Connect(function()
+    if AntiAFKEnabled then
+        VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+    end
+end)
+
+-- Configurações de Interface e Salvar Configurações
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Fluent",
+    Content = "The script has been loaded.",
+    Duration = 5
+})
+
+SaveManager:LoadAutoloadConfig()
+
+local PlayerSection = Tabs.AutoFarm:AddSection("Player")
+
+local Toggle = Tabs.AutoFarm:AddToggle("AutoClickToggle", { Title = "Auto Click", Default = false })
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        task.spawn(function()
+            while Toggle.Value do
+                task.wait()
+                local args = {
+                    [1] = 0,
+                    [2] = 1
+                }
+
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ClickEvent"):FireServer(unpack(args))
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ClickPower"):WaitForChild("CheckIsUnlockEvent"):FireServer()
+            end
+        end)
+    end
+end)
+
+Options.AutoClickToggle:SetValue(false)
+
+local Toggle = Tabs.AutoFarm:AddToggle("AutoAttack", { Title = "Auto Attack", Default = false })
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        task.spawn(function()
+            while Toggle.Value do
+                task.wait(0.1) -- Intervalo de 0.1 segundo
+                local args = {
+                    [1] = 1,
+                    [2] = 1
+                }
+
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ClickEvent"):FireServer(unpack(args))
+            end
+        end)
+    end
+end)
+
+Options.AutoAttack:SetValue(false)
+
+local OthersSection = Tabs.AutoFarm:AddSection("Others")
+
+local Toggle = Tabs.AutoFarm:AddToggle("ClaimRewardsToggle", { Title = "Auto Claim Rewards", Default = false })
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        task.spawn(function()
+            while Toggle.Value do
+                for i = 1, 13 do
+                    if not Toggle.Value then break end -- Interrompe o loop se o toggle for desativado
+                    task.wait(0.1) -- Intervalo de 0.1 segundo entre as execuções
+                    local args = {
+                        [1] = i
+                    }
+
+                    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Rewards"):WaitForChild("ClaimeTaskEvent"):FireServer(unpack(args))
+                    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ClickPower"):WaitForChild("CheckIsUnlockEvent"):FireServer()
+                end
+            end
+        end)
+    end
+end)
+
+Options.ClaimRewardsToggle:SetValue(false)
+
+local Toggle = Tabs.AutoFarm:AddToggle("AutoRebirthToggle", { Title = "Auto Rebirth", Default = false })
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        task.spawn(function()
+            while Toggle.Value do
+                task.wait(0.1) -- Intervalo de 0.1 segundo
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Rebirth"):WaitForChild("RebirthEvent"):FireServer()
+            end
+        end)
+    end
+end)
+
+Options.AutoRebirthToggle:SetValue(false)
+
+local Toggle = Tabs.AutoFarm:AddToggle("AutoUsePotions", { Title = "Auto Use Potions", Default = false })
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        task.spawn(function()
+            while Toggle.Value do
+                task.wait(0.1) -- Intervalo de 0.1 segundo
+
+                local args1 = { [1] = 1863996784 }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Buff"):WaitForChild("REventUseBuff"):FireServer(unpack(args1))
+
+                local args2 = { [1] = 1863996604 }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Buff"):WaitForChild("REventUseBuff"):FireServer(unpack(args2))
+
+                local args3 = { [1] = 1863996414 }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Buff"):WaitForChild("REventUseBuff"):FireServer(unpack(args3))
+            end
+        end)
+    end
+end)
+
+Options.AutoUsePotions:SetValue(false)                                                                                                                                                                                                                                        
+
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local normalSpeed = 25 -- Velocidade padrão
+local customSpeed = normalSpeed -- Velocidade configurável pelo Input
+
+-- Input para definir a velocidade (posicionado primeiro)
+local Input = Tabs.Misc:AddInput("SpeedInput", {
+    Title = "Set Speed",
+    Default = "",
+    Placeholder = "Enter Speed",
+    Numeric = true, -- Apenas números
+    Finished = true, -- Chama o callback quando pressionar enter
+    Callback = function(Value)
+        local speed = tonumber(Value)
+        if speed and speed > 0 then
+            customSpeed = speed -- Atualiza a velocidade personalizada
+            print("Custom speed set to:", customSpeed)
+            -- Aplica a velocidade imediatamente se o Toggle estiver ativo
+            if Options.MyToggle.Value then
+                humanoid.WalkSpeed = customSpeed
+            end
+        else
+            print("Invalid speed value.")
+        end
+    end
+})
+
+-- Toggle para ativar/desativar o boost de velocidade
+local Toggle = Tabs.Misc:AddToggle("MyToggle", {Title = "Enable WalkSpeed", Default = false })
+
+-- Controla o Toggle
+Toggle:OnChanged(function()
+    if Options.MyToggle.Value then
+        humanoid.WalkSpeed = customSpeed -- Aplica a velocidade do Input
+        print("Speed Boost Activated! Current speed:", customSpeed)
+    else
+        humanoid.WalkSpeed = normalSpeed -- Retorna à velocidade padrão
+        print("Speed Boost Deactivated! Default speed:", normalSpeed)
+    end
+end)
+
+Options.MyToggle:SetValue(false) -- Define o estado inicial como desativado
+
+local MobsSection = Tabs.Boss:AddSection("Mobs")
+
+local Toggle = Tabs.Boss:AddToggle("AutoMobs", { 
+    Title = "Auto Mobs", 
+    Default = false, 
+})
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        task.spawn(function()
+            while Toggle.Value do
+                task.wait(0.1) -- Intervalo de 0.1 segundo
+                
+                -- Primeiro conjunto de inimigos
+                local args1 = {
+                    [1] = 2,
+                    [2] = 6
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args1))
+
+                -- Segundo conjunto de inimigos
+                local args2 = {
+                    [1] = 2,
+                    [2] = 14
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args2))
+
+                -- Terceiro conjunto de inimigos
+                local args3 = {
+                    [1] = 2,
+                    [2] = 2
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args3))
+
+                -- Quarto conjunto de inimigos
+                local args4 = {
+                    [1] = 2,
+                    [2] = 8
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args4))
+
+                -- Quinto conjunto de inimigos
+                local args5 = {
+                    [1] = 2,
+                    [2] = 1
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args5))
+
+                -- Sexto conjunto de inimigos
+                local args6 = {
+                    [1] = 2,
+                    [2] = 5
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args6))
+
+                -- Sétimo conjunto de inimigos
+                local args7 = {
+                    [1] = 2,
+                    [2] = 3
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args7))
+
+                -- Oitavo conjunto de inimigos
+                local args8 = {
+                    [1] = 2,
+                    [2] = 4
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args8))
+
+                -- Nono conjunto de inimigos
+                local args9 = {
+                    [1] = 2,
+                    [2] = 13
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args9))
+
+                -- Décimo conjunto de inimigos
+                local args10 = {
+                    [1] = 2,
+                    [2] = 11
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args10))
+
+                -- Décimo primeiro conjunto de inimigos
+                local args11 = {
+                    [1] = 2,
+                    [2] = 9
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args11))
+
+                -- Décimo segundo conjunto de inimigos
+                local args12 = {
+                    [1] = 2,
+                    [2] = 12
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args12))
+
+                -- Décimo terceiro conjunto de inimigos
+                local args13 = {
+                    [1] = 2,
+                    [2] = 7
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args13))
+
+                -- Décimo quarto conjunto de inimigos
+                local args14 = {
+                    [1] = 2,
+                    [2] = 10
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args14))
+            end
+        end)
+    end
+end)
+
+local AllBossSection = Tabs.Boss:AddSection("All Boss")
+
+local Toggle = Tabs.Boss:AddToggle("AttackAllBoss", { Title = "Attack All Boss", Default = false })
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        task.spawn(function()
+            while Toggle.Value do
+                task.wait(0.1) -- Intervalo de 0.1 segundo
+
+                for i = 1, 12 do
+                    local args = {
+                        [1] = i
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("MapBoss"):WaitForChild("HurtEnemyEvent"):FireServer(unpack(args))
+                end
+            end
+        end)
+    end
+end)
+
+local Toggle = Tabs.Boss:AddToggle("AutoMobsPhantom", { Title = "Auto Boss Phantom", Default = false })
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        task.spawn(function()
+            while Toggle.Value do
+                task.wait(0.1) -- Intervalo de 0.1 segundo
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("Tower"):WaitForChild("HurtEnemyEvent"):FireServer()
+            end
+        end)
+    end
+end)
+
+local EventlotterySection = Tabs.Event:AddSection("Event lottery")
+
+local Dropdown = Tabs.Event:AddDropdown("SelectBuy", {
+    Title = "Select Buy",
+    Values = {"Buy 1", "Buy 10"},
+    Multi = false,
+    Default = 1,
+})
+
+Dropdown:SetValue("Buy 1")
+
+local Toggle = Tabs.Event:AddToggle("AutoBuyToggle", {
+    Title = "Enable Auto Buy",
+    Default = false,
+})
+
+Toggle:OnChanged(function()
+    while Toggle.Value do
+        if Dropdown.Value == "Buy 1" then
+            -- Executar o script de compra automática de 1
+            local args = {
+                [1] = 1
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("CoinsShop"):WaitForChild("LottoEvent"):FireServer(unpack(args))
+        elseif Dropdown.Value == "Buy 10" then
+            -- Executar o script de compra automática de 10
+            local args = {
+                [1] = 10
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("CoinsShop"):WaitForChild("LottoEvent"):FireServer(unpack(args))
+        end
+        wait(0.5)  -- Aguarda 0.5 segundos para realizar a próxima compra
+    end
+end)
+
+local EventStoreSection = Tabs.Event:AddSection("Event Store")
+
+local Dropdown = Tabs.Event:AddDropdown("SelectItem", {
+    Title = "Select",
+    Values = {"Spellclaw", "Hexhound", "Espectral Warden", "Battlemage", "Enigma Beast", "Incantation Edge", "Necrohex Master"},
+    Multi = false,
+    Default = 1,
+})
+
+Dropdown:SetValue("Spellclaw")
+
+local Toggle = Tabs.Event:AddToggle("AutoCollectToggle", {
+    Title = "Clain",
+    Default = false,
+})
+
+Toggle:OnChanged(function()
+    if Toggle.Value then
+        while Toggle.Value do
+            local selectedItem
+            if Dropdown.Value == "Spellclaw" then
+                selectedItem = 601
+            elseif Dropdown.Value == "Hexhound" then
+                selectedItem = 602
+            elseif Dropdown.Value == "Espectral Warden" then
+                selectedItem = 603
+            elseif Dropdown.Value == "Battlemage" then
+                selectedItem = 604
+            elseif Dropdown.Value == "Enigma Beast" then
+                selectedItem = 605
+            elseif Dropdown.Value == "Incantation Edge" then
+                selectedItem = 606
+            elseif Dropdown.Value == "Necrohex Master" then
+                selectedItem = 607
+            end
+
+            local args = {
+                [1] = selectedItem
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Activity"):WaitForChild("EventEnemy"):WaitForChild("UI_2"):WaitForChild("UseItemEvent"):FireServer(unpack(args))
+            wait(0.5)
+        end
+    end
+end)
